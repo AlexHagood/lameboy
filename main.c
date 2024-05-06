@@ -1,63 +1,11 @@
 #include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include "opcodes.c"
 
-struct registers
-{
 
-    uint8_t regs[8];
-
-    // BASE GAMEBOY REGISTERS
-    const uint8_t* a;
-    const uint8_t* f;
-    const uint8_t* b;
-    const uint8_t* c;
-    const uint8_t* d;
-    const uint8_t* e;
-    const uint8_t* h;
-    const uint8_t* l;
-
-    // 16 BIT REGISTER VIEWS
-    const uint16_t* af;
-    const uint16_t* bc;
-    const uint16_t* de;
-    const uint16_t* hl;
-
-    // Special Purpose Registers
-    uint16_t PC;
-    uint16_t SP;
-    
-} typedef Registers;
-
-void initRegs(Registers* regBank)
-{
-    // init register values
-    regBank->a = &regBank->regs[0];
-    regBank->f = &regBank->regs[1];
-    regBank->b = &regBank->regs[2];
-    regBank->c = &regBank->regs[3];
-    regBank->d = &regBank->regs[4];
-    regBank->e = &regBank->regs[5];
-    regBank->h = &regBank->regs[6];
-    regBank->l = &regBank->regs[7];
-
-    // init register views
-    regBank->af = (uint16_t *)&regBank->regs[0];
-    regBank->bc = (uint16_t *)&regBank->regs[2];
-    regBank->de = (uint16_t *)&regBank->regs[4];
-    regBank->hl = (uint16_t *)&regBank->regs[6];
-};
-
-struct mem
-{
-    uint8_t memory[65536];
-    uint8_t const* ROM;
-    uint8_t* VRAM;
-
-} typedef Mem;
-
-initMem(Mem* memory)
-{
-    memory->ROM = memory->memory;
-}
 
 
 
@@ -66,20 +14,18 @@ int loadrom(char* path, Mem* memory)
     int romPtr = open(path, 0);
     if (romPtr < 1)
     {
-        printf("ERROR: ROM path invalid! Does it exist?");
-        exit(1);
+        printf("ERROR: ROM path invalid! Does it exist?\n");
+        return 1;
     }
     int romSize = read(romPtr, memory->memory, 32767);
     if (romSize < 1)
     {
-        printf("ERROR: ROM Read Failed!");
-        exit(1);
+        printf("ERROR: ROM Read Failed!\n");
+        return 1;
     }
 
-
-
-
-
+    printf("ROM of size %d read!\n", romSize);
+    return 0;
 }
 
 
@@ -90,18 +36,38 @@ int main(int argc, char** argv)
 
     if (argc < 2)
     {
-        printf("ERROR: Input ROM path!");
+        printf("ERROR: Input ROM path!\n");
         exit(1);
     }
 
+    System sys;
+    initRegs(&sys.regs);
 
-    Registers registers;
-    initRegs(&registers);
+    initMem(&sys);
 
-    Mem memory;
-    initMem(&memory);
+    if (loadrom(argv[1], &sys.mem) != 0)
+    {
+        return 1;
+    }
+    puts(sys.mem.Title);
 
-    
+    // 0x147 determines if the game uses MBC (memory bank controller), exit if it does.
+    if (sys.mem.ROM[0x147] != 0)
+    {
+        printf("ERROR: Only MBC type 0 is supported!\n");
+        exit(1);
+    }
 
+    puts("Initializing operations...");
+
+    opCode opCodes[256];
+    opCode CBopCodes[256];
+
+    initOps(opCodes, CBopCodes, &sys.regs);
+
+    puts("Operations initialized!");
+
+
+    return 0;    
 
 }
