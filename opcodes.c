@@ -30,6 +30,8 @@ enum Opcode
     RRA,
     STOP,
     JR,
+    JRC,
+    JRZ,
     DAA,
     CPL,
     SCF,
@@ -121,7 +123,7 @@ void initOps(opCode *opCodes, opCode *CBopCodes, Registers *Regs)
     initOpcode(&opCodes[0x1d], Regs->E, 0, 0, 4, DEC);
     initOpcode(&opCodes[0x1e], Regs->E, &Regs->PC, 0, 8, LD);
     initOpcode(&opCodes[0x1f], 0, 0, 0, 4, RRA);
-    initOpcode(&opCodes[0x20], &Regs->PC, &iBitSets[Z], 0, 12, JR);
+    initOpcode(&opCodes[0x20], &Regs->PC, &iBitSets[Z], 0, 12, JRZ);
     initOpcode(&opCodes[0x21], Regs->HL, &Regs->PC, 3, 12, LD);
     initOpcode(&opCodes[0x22], Regs->HL, Regs->A, 1, 8, LD);
     initOpcode(&opCodes[0x23], Regs->HL, 0, 1, 8, IF);
@@ -129,7 +131,7 @@ void initOps(opCode *opCodes, opCode *CBopCodes, Registers *Regs)
     initOpcode(&opCodes[0x25], Regs->H, 0, 0, 4, DEC);
     initOpcode(&opCodes[0x26], Regs->H, &Regs->PC, 0, 8, LD);
     initOpcode(&opCodes[0x27], 0, 0, 0, 4, DAA);
-    initOpcode(&opCodes[0x28], &Regs->PC, &bitSets[Z], 0, 12, JR);
+    initOpcode(&opCodes[0x28], &Regs->PC, &bitSets[Z], 0, 12, JRZ);
     initOpcode(&opCodes[0x29], Regs->HL, Regs->HL, 3, 8, ADD);
     initOpcode(&opCodes[0x2a], Regs->A, Regs->HL, 2, 8, LD);
     initOpcode(&opCodes[0x2b], Regs->HL, 0, 1, 8, DEC);
@@ -137,7 +139,7 @@ void initOps(opCode *opCodes, opCode *CBopCodes, Registers *Regs)
     initOpcode(&opCodes[0x2d], Regs->L, 0, 0, 4, DEC);
     initOpcode(&opCodes[0x2e], Regs->L, &Regs->PC, 0, 8, LD);
     initOpcode(&opCodes[0x2f], 0, 0, 0, 4, CPL);
-    initOpcode(&opCodes[0x30], &Regs->PC, &iBitSets[Cf], 0, 12, JR);
+    initOpcode(&opCodes[0x30], &Regs->PC, &iBitSets[Cf], 0, 12, JRC);
     initOpcode(&opCodes[0x31], &Regs->SP, &Regs->PC, 3, 12, LD);
     initOpcode(&opCodes[0x32], Regs->HL, Regs->A, 1, 8, LDD);
     initOpcode(&opCodes[0x33], &Regs->PC, 0, 1, 8, IF);
@@ -145,7 +147,7 @@ void initOps(opCode *opCodes, opCode *CBopCodes, Registers *Regs)
     initOpcode(&opCodes[0x35], Regs->HL, 0, 1, 12, DEC);
     initOpcode(&opCodes[0x36], Regs->HL, &Regs->PC, 1, 12, LD);
     initOpcode(&opCodes[0x37], 0, 0, 0, 4, SCF);
-    initOpcode(&opCodes[0x38], &Regs->PC, &bitSets[Cf] 0, 12, JR);
+    initOpcode(&opCodes[0x38], &Regs->PC, &bitSets[Cf], 0, 12, JRC);
     initOpcode(&opCodes[0x39], Regs->HL, &Regs->PC, 3, 8, ADD);
     initOpcode(&opCodes[0x3a], Regs->A, Regs->HL, 2, 8, LD);
     initOpcode(&opCodes[0x3b], &Regs->PC, 0, 1, 8, DEC);
@@ -616,7 +618,14 @@ void executeOpcode(opCode *operation, System *sys)
         Load(operation, sys);
         break;
     case LDD:
-
+        LoadDec(operation, sys);
+        break;
+    case JRC:
+        JumpConditionC(operation, sys);
+        break;
+    case JRZ:
+        JumpConditionZ(operation, sys);
+        break;
     case XOR:
         ExclusiveOR(operation, sys);
         break;
@@ -637,15 +646,32 @@ void checkBit(opCode *operation, System *sys){
     sys->regs.r[F] &= iBitSets[N];
 }
 
-void JumpCondition(opCode* operation, System* sys)
+
+// Does the jump happen from the adress of the instruction or the adress of the data??
+void JumpConditionZ(opCode* operation, System* sys)
 {
-    if (sys->regs.r[F] & *(operation->reg2))
+    if (sys->regs.r[F] ^ *(operation->reg2) & bitSets[Z])
     {
-        
+        sys->regs.PC += 1;
+        sys->regs.PC += *(operation->reg1);
     }
-    
+    else
+    {
+        sys->regs.PC += 2;
+    }
+}
 
-
+void JumpConditionC(opCode* operation, System* sys)
+{
+    if (sys->regs.r[F] ^ *(operation->reg2) & bitSets[C])
+    {
+        sys->regs.PC += 1;
+        sys->regs.PC += *(operation->reg1);
+    }
+    else
+    {
+        sys->regs.PC += 2;
+    }
 }
 
 

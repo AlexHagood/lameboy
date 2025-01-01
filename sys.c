@@ -19,6 +19,8 @@ typedef struct system
 {
     Mem mem;
     Registers regs;
+    long int cycles;
+    
 } System;
 
 
