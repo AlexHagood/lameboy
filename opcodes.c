@@ -9,8 +9,8 @@ enum Flags
     Cf = 4,
 };
 
-const int bitSets[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
-const int iBitSets[8] = {0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF, 0x7F};
+const uint8_t bitSets[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+const uint8_t iBitSets[8] = {0xFE, 0xFD, 0xFB, 0xF7, 0xEF, 0xDF, 0xBF, 0x7F};
 
 enum Opcode
 {
@@ -29,8 +29,8 @@ enum Opcode
     RRA,
     STOP,
     JR,
-    JRC,
-    JRZ,
+    JRS, // Jump if flag is set
+    JRR, // Jump if flag is reset
     DAA,
     CPL,
     SCF,
@@ -122,7 +122,7 @@ void initOps(opCode *opCodes, opCode *CBopCodes, Registers *Regs)
     initOpcode(&opCodes[0x1d], Regs->E, 0, 0, 4, DEC);
     initOpcode(&opCodes[0x1e], Regs->E, &Regs->PC, 0, 8, LD);
     initOpcode(&opCodes[0x1f], 0, 0, 0, 4, RRA);
-    initOpcode(&opCodes[0x20], &Regs->PC, &iBitSets[Z], 0, 12, JRZ);
+    initOpcode(&opCodes[0x20], Regs->PC+1, &bitSets[Z], 0, 12, JRR);
     initOpcode(&opCodes[0x21], Regs->HL, &Regs->PC, 3, 12, LD);
     initOpcode(&opCodes[0x22], Regs->HL, Regs->A, 1, 8, LD);
     initOpcode(&opCodes[0x23], Regs->HL, 0, 1, 8, IF);
@@ -130,7 +130,7 @@ void initOps(opCode *opCodes, opCode *CBopCodes, Registers *Regs)
     initOpcode(&opCodes[0x25], Regs->H, 0, 0, 4, DEC);
     initOpcode(&opCodes[0x26], Regs->H, &Regs->PC, 0, 8, LD);
     initOpcode(&opCodes[0x27], 0, 0, 0, 4, DAA);
-    initOpcode(&opCodes[0x28], &Regs->PC, &bitSets[Z], 0, 12, JRZ);
+    initOpcode(&opCodes[0x28], &Regs->PC, &bitSets[Z], 0, 12, JRS);
     initOpcode(&opCodes[0x29], Regs->HL, Regs->HL, 3, 8, ADD);
     initOpcode(&opCodes[0x2a], Regs->A, Regs->HL, 2, 8, LD);
     initOpcode(&opCodes[0x2b], Regs->HL, 0, 1, 8, DEC);
@@ -138,7 +138,7 @@ void initOps(opCode *opCodes, opCode *CBopCodes, Registers *Regs)
     initOpcode(&opCodes[0x2d], Regs->L, 0, 0, 4, DEC);
     initOpcode(&opCodes[0x2e], Regs->L, &Regs->PC, 0, 8, LD);
     initOpcode(&opCodes[0x2f], 0, 0, 0, 4, CPL);
-    initOpcode(&opCodes[0x30], &Regs->PC, &iBitSets[Cf], 0, 12, JRC);
+    initOpcode(&opCodes[0x30], &Regs->PC, &bitSets[Cf], 0, 12, JRR);
     initOpcode(&opCodes[0x31], &Regs->SP, &Regs->PC, 3, 12, LD);
     initOpcode(&opCodes[0x32], Regs->HL, Regs->A, 1, 8, LDD);
     initOpcode(&opCodes[0x33], &Regs->PC, 0, 1, 8, IF);
@@ -146,7 +146,7 @@ void initOps(opCode *opCodes, opCode *CBopCodes, Registers *Regs)
     initOpcode(&opCodes[0x35], Regs->HL, 0, 1, 12, DEC);
     initOpcode(&opCodes[0x36], Regs->HL, &Regs->PC, 1, 12, LD);
     initOpcode(&opCodes[0x37], 0, 0, 0, 4, SCF);
-    initOpcode(&opCodes[0x38], &Regs->PC, &bitSets[Cf], 0, 12, JRC);
+    initOpcode(&opCodes[0x38], &Regs->PC, &bitSets[Cf], 0, 12, JRS);
     initOpcode(&opCodes[0x39], Regs->HL, &Regs->PC, 3, 8, ADD);
     initOpcode(&opCodes[0x3a], Regs->A, Regs->HL, 2, 8, LD);
     initOpcode(&opCodes[0x3b], &Regs->PC, 0, 1, 8, DEC);
@@ -608,7 +608,7 @@ void initOps(opCode *opCodes, opCode *CBopCodes, Registers *Regs)
 
 void executeOpcode(opCode *operation, System *sys)
 {
-    printf("Executing opcode %d\n", operation->mnemonic);
+    printf("Executing mnemonic %d\n", operation->mnemonic);
     switch (operation->mnemonic)
     {
     case NOP:
@@ -620,14 +620,17 @@ void executeOpcode(opCode *operation, System *sys)
     case LDD:
         LoadDec(operation, sys);
         break;
-    case JRC:
-        JumpConditionC(operation, sys);
+    case JRR:
+        JumpConditionReset(operation, sys);
         break;
-    case JRZ:
-        JumpConditionZ(operation, sys);
+    case JRS:
+        JumpConditionSet(operation, sys);
         break;
     case XOR:
         ExclusiveOR(operation, sys);
+        break;
+    case BIT:
+        testBit(operation, sys);
         break;
     default:
         printf("Instruction %d not found or implemented!\n", operation->mnemonic); // Code for handling illegal opcode
@@ -637,43 +640,57 @@ void executeOpcode(opCode *operation, System *sys)
 }
 
 // If the Nth bit at the given register is 1, set the Z flag to 1
-void checkBit(opCode *operation, System *sys){
-    if (*(operation->reg1) & *(operation->reg2))
+void testBit(opCode *operation, System *sys){
+    for (int i = 0; i < 8; i++)
+    {
+        printf("%d,", sys->regs.r[i]);
+    }
+    printf("Testing bit %d\n", sys->regs.r[H]);
+    printf("Testing bit %d\n", *(uint8_t*)operation->reg1);
+    if (*(uint8_t*)operation->reg1 & *(uint8_t*)operation->reg2)
     {
         sys->regs.r[F] |= bitSets[Z];
     }
-    sys->regs.r[F] |= bitSets[H];
+    sys->regs.r[F] |= bitSets[Hf];
     sys->regs.r[F] &= iBitSets[N];
+    printf("Flag: %d\n", sys->regs.r[F]);
+    sys->regs.PC += 1;
 }
 
 
 // Does the jump happen from the adress of the instruction or the adress of the data??
-void JumpConditionZ(opCode* operation, System* sys)
+void JumpConditionReset(opCode* operation, System* sys)
 {
-    if (sys->regs.r[F] ^ *(operation->reg2) & bitSets[Z])
+    sys->regs.PC += 2;
+    printf("JZR");
+    if (!(sys->regs.r[F] & *(operation->reg2)))
     {
-        sys->regs.PC += 1;
-        sys->regs.PC += *(operation->reg1);
+        printf("Jumped from PC: %d", sys->regs.PC-sys->mem.BOOT_ROM);
+        sys->regs.PC += *(int8_t*)(sys->regs.PC - 1);
+        printf("to PC: %d\n", sys->regs.PC-sys->mem.BOOT_ROM);
     }
     else
     {
-        sys->regs.PC += 2;
+        printf(" failed\n");
+        
     }
 }
 
-void JumpConditionC(opCode* operation, System* sys)
+void JumpConditionSet(opCode* operation, System* sys)
 {
-    if (sys->regs.r[F] ^ *(operation->reg2) & bitSets[C])
+    printf("jzS");
+    if (sys->regs.r[F] & *(operation->reg2))
     {
-        sys->regs.PC += 1;
-        sys->regs.PC += *(operation->reg1);
+        printf("Jumped from PC: %d", sys->regs.PC-sys->mem.BOOT_ROM);
+        sys->regs.PC += *(int8_t*)(sys->regs.PC + 1);
+        printf("to PC: %d\n", sys->regs.PC-sys->mem.BOOT_ROM);
     }
     else
     {
+        printf(" failed\n");
         sys->regs.PC += 2;
     }
 }
-
 
 void ExclusiveOR(opCode *operation, System *sys)
 {
@@ -684,7 +701,7 @@ void ExclusiveOR(opCode *operation, System *sys)
     if (sys->regs.r[A] == 0)
         sys->regs.r[F] &= bitSets[Z];
 
-    sys->regs.PC += 2;
+    sys->regs.PC += 1;
 }
 
 void LoadDec(opCode *operation, System *sys)
@@ -702,13 +719,14 @@ void Load(opCode *operation, System *sys)
     switch (operation->iSize)
     {
     case 0: // Two 8 bit operators
-        printf("LOAD 8x8 NOT IMPLEMENTED");
+        printf("LOAD 8x8 NOT IMPLEMENTED\n");
+        exit(1);
         break;
     case 1: // Reg1 is 16 bit reg2 is 8 bit
-        printf("LOAD 16x8 NOT IMPLEMENTED");
+        printf("LOAD 16x8 NOT IMPLEMENTED\n");
         break;
     case 2: // reg2 is 8 bit reg1 is 16 bit
-        printf("LOAD 8x16 NOT IMPLEMENTED");
+        printf("LOAD 8x16 NOT IMPLEMENTED\n");
 
         break;
     case 3: // Both regs 16bit

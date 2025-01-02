@@ -67,6 +67,45 @@ int main(int argc, char** argv)
 
     puts("Operations initialized!");
 
+    puts("Loading BOOT rom...");
+
+    loadBootRom(&sys.mem);
+
+    puts("Executing boot sequence");
+
+    for (int i = 0; i < 10; i++) {
+            printf("Memory %d: 0x%02X\n", i, sys.mem.BOOT_ROM[i]);
+    }
+    opCode* operation = NULL;
+    sys.regs.PC = sys.mem.BOOT_ROM;
+
+    for (int i = 0; i < 8; i++)
+    {
+        sys.regs.r[i] = 0;
+    }
+
+    for (int i = 0; i < 10; i++)
+    {
+        uint8_t opCode = *sys.regs.PC;
+        if (opCode == 0xCB) // CB prefixed opcode
+        {
+            sys.regs.PC += 1;
+            opCode = *sys.regs.PC;
+            operation = &CBopCodes[opCode];
+            printf("PC: %d, OP: cb %x", sys.regs.PC-sys.mem.BOOT_ROM, opCode);
+
+        } else
+        {
+            operation = &opCodes[opCode];
+            printf("PC: %d, OP: %x", sys.regs.PC-sys.mem.BOOT_ROM, opCode);
+        }
+        printf(" FLAGS: %x\n", sys.regs.r[F]);
+        
+        executeOpcode(operation, &sys);
+        
+    }
+
+
 
     return 0;    
 
