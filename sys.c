@@ -6,8 +6,16 @@ typedef struct mem
     uint8_t const* ROM;
     uint8_t* VRAM;
     const char* Title;
+    uint8_t BOOT_ROM[256];
  
 }  Mem;
+
+void loadBootRom(Mem* memory)
+{
+    FILE* bootRom = fopen("roms/DMG_ROM.bin", "rb");
+    fread(memory->BOOT_ROM, 256, 1, bootRom);
+    fclose(bootRom);
+}
 
 void initMem(Mem* memory)
 {
