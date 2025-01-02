@@ -49,4 +49,8 @@ void initRegs(Registers* regBank)
     regBank->DE = (uint16_t *)&regBank->r[DE];
     regBank->HL = (uint16_t *)&regBank->r[HL];
 
+    //init special registers
+    regBank->PC = 0;
+    regBank->SP = 0xFEFE;
+
 };

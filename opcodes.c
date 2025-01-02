@@ -1,12 +1,11 @@
 #include <stdint.h>
 #include <string.h>
 #include "sys.c"
-
 enum Flags
 {
     Z = 7,
     N = 6,
-    H = 5,
+    Hf = 5,
     Cf = 4,
 };
 
@@ -609,6 +608,7 @@ void initOps(opCode *opCodes, opCode *CBopCodes, Registers *Regs)
 
 void executeOpcode(opCode *operation, System *sys)
 {
+    printf("Executing opcode %d\n", operation->mnemonic);
     switch (operation->mnemonic)
     {
     case NOP:
@@ -630,7 +630,7 @@ void executeOpcode(opCode *operation, System *sys)
         ExclusiveOR(operation, sys);
         break;
     default:
-        printf("Instruction %d not found or implemented!", operation->mnemonic); // Code for handling illegal opcode
+        printf("Instruction %d not found or implemented!\n", operation->mnemonic); // Code for handling illegal opcode
         exit(1);
         break;
     }
