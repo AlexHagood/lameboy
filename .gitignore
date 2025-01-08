@@ -3,3 +3,5 @@
 lameboy
 .roms/
 *.o
+.venv
+__pycache__/

@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 typedef enum {
-    A, F, B, C, D, E, H, L, AF = 0, BC = 2, DE = 4, HL = 6
+    F, A, B, C, E, D, L, H, AF = 0, BC = 2, DE = 4, HL = 6
 } RegisterName;
 
 typedef struct registers
@@ -20,10 +20,10 @@ typedef struct registers
     const uint8_t* L;
 
     // 16 BIT REGISTER VIEWS
-    const uint16_t* AF;
-    const uint16_t* BC;
-    const uint16_t* DE;
-    const uint16_t* HL;
+    uint16_t* AF;
+    uint16_t* BC;
+    uint16_t* DE;
+    uint16_t* HL;
 
     // Special Purpose Registers
     uint8_t* PC;

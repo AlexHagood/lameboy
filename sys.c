@@ -1,4 +1,5 @@
 #include "registers.c"
+#include <stdio.h>
 
 typedef struct mem
 {

@@ -608,6 +608,10 @@ void initOps(opCode *opCodes, opCode *CBopCodes, Registers *Regs)
 
 void executeOpcode(opCode *operation, System *sys)
 {
+    if (operation->reg2 == &sys->regs.PC)
+    {
+        operation->reg2 = sys->regs.PC+1;
+    }
     printf("Executing mnemonic %d\n", operation->mnemonic);
     switch (operation->mnemonic)
     {
@@ -615,6 +619,7 @@ void executeOpcode(opCode *operation, System *sys)
         sys->cycles += 4;
         break;
     case LD:
+        printf("LOAD\n");
         Load(operation, sys);
         break;
     case LDD:
@@ -639,16 +644,12 @@ void executeOpcode(opCode *operation, System *sys)
     }
 }
 
-// If the Nth bit at the given register is 1, set the Z flag to 1
+// If the Nth bit at the given register is 0, set the Z flag to 1
 void testBit(opCode *operation, System *sys){
-    for (int i = 0; i < 8; i++)
+    printf("Testing bit %x\n", sys->regs.r[H]);
+    if (!(*(uint8_t*)operation->reg1 & *(uint8_t*)operation->reg2))
     {
-        printf("%d,", sys->regs.r[i]);
-    }
-    printf("Testing bit %d\n", sys->regs.r[H]);
-    printf("Testing bit %d\n", *(uint8_t*)operation->reg1);
-    if (*(uint8_t*)operation->reg1 & *(uint8_t*)operation->reg2)
-    {
+        printf("%d,,,%d", *(uint8_t*)operation->reg2, *operation->reg2);
         sys->regs.r[F] |= bitSets[Z];
     }
     sys->regs.r[F] |= bitSets[Hf];
@@ -706,18 +707,16 @@ void ExclusiveOR(opCode *operation, System *sys)
 
 void LoadDec(opCode *operation, System *sys)
 {
-    sys->regs.r[A] = sys->mem.memory[sys->regs.r[HL]];
+    printf("Load decrement store\n");
+    sys->mem.memory[*sys->regs.HL] = sys->regs.r[A];
+    *sys->regs.HL -= 1;
     sys->regs.PC += 1;
 }
 
 void Load(opCode *operation, System *sys)
 {
-    if (operation->reg2 == &sys->regs.PC)
-    {
-        sys->regs.PC += 1;
-    }
-    switch (operation->iSize)
-    {
+
+    switch (operation->iSize) {
     case 0: // Two 8 bit operators
         printf("LOAD 8x8 NOT IMPLEMENTED\n");
         exit(1);
@@ -732,9 +731,13 @@ void Load(opCode *operation, System *sys)
     case 3: // Both regs 16bit
 
         *(operation->reg1) = *(operation->reg2);
-        if (operation->reg2 == &sys->regs.PC) // We need to increment PC by 2 to get the next instruction if we load an immediate
+        printf("%x\n", *(operation->reg1));
+
+        if (operation->reg2 == sys->regs.PC+1) // We need to increment PC by 2 to get the next instruction if we load an immediate
         {
-            sys->regs.PC += 2;
+            sys->regs.PC += 3;
+        } else {
+            sys->regs.PC += 1;
         }
         break;
     }
