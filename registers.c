@@ -6,24 +6,37 @@ typedef enum {
 
 typedef struct registers
 {
+    union {
+        struct {
+            uint8_t F;
+            uint8_t A;
+        };
+        uint16_t AF;
+    };
 
-    uint8_t r[8];
+    union {
+        struct {
+            uint8_t C;
+            uint8_t B;
+        };
+        uint16_t BC;
+    };
 
-    // BASE GAMEBOY REGISTERS
-    const uint8_t* A;
-    const uint8_t* F;
-    const uint8_t* B;
-    const uint8_t* C;
-    const uint8_t* D;
-    const uint8_t* E;
-    const uint8_t* H;
-    const uint8_t* L;
+    union {
+        struct {
+            uint8_t E;
+            uint8_t D;
+        };
+        uint16_t DE;
+    };
 
-    // 16 BIT REGISTER VIEWS
-    uint16_t* AF;
-    uint16_t* BC;
-    uint16_t* DE;
-    uint16_t* HL;
+    union {
+        struct {
+            uint8_t L;
+            uint8_t H;
+        };
+        uint16_t HL;
+    };
 
     // Special Purpose Registers
     uint8_t* PC;
@@ -33,24 +46,5 @@ typedef struct registers
 
 void initRegs(Registers* regBank)
 {
-    // init register pointer values
-    regBank->A = &regBank->r[A];
-    regBank->F = &regBank->r[F];
-    regBank->B = &regBank->r[B];
-    regBank->C = &regBank->r[C];
-    regBank->D = &regBank->r[D];
-    regBank->E = &regBank->r[E];
-    regBank->H = &regBank->r[H];
-    regBank->L = &regBank->r[L];
-
-
-    // init register views
-    regBank->AF = (uint16_t *)&regBank->r[AF];
-    regBank->BC = (uint16_t *)&regBank->r[BC];
-    regBank->DE = (uint16_t *)&regBank->r[DE];
-    regBank->HL = (uint16_t *)&regBank->r[HL];
-
-    //init special registers
     regBank->SP = 0xFEFE;
-
 };
