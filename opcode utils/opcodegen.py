@@ -64,7 +64,7 @@ for op in opsCB.values():
                 isize |= 0b1
     #print (1 + (reg1 == "SP") * ((True == (isize & 0b1))+1) + (reg2 == "SP") * ((True == (isize & 0b10))+1), op["bytes"])
     
-    print(f"initOpcode(&CBopCodes[{hex(i)}], {reg1}, {reg2}, {isize}, {cycles}, {mnemonic});");
+    print(f"case {hex(i)}:\n    puts(\"Operation CB {hex(i)}, {mnemonic}({reg1})({reg2}) not implemented!\");\n    exit(1);\n    break;");
     i += 1;
     
 
