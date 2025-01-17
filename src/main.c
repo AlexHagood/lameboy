@@ -32,7 +32,8 @@ int loadrom(char* path, Mem* memory)
 void loadBootRom(Mem* memory)
 {
     FILE* bootRom = fopen("roms/DMG_ROM.bin", "rb");
-    fread(memory->BOOT_ROM, 256, 1, bootRom);
+    memcpy(memory->BOOT_ROM, memory->memory, 256);
+    fread(memory->memory, 256, 1, bootRom);
     fclose(bootRom);
 }
 
@@ -57,7 +58,10 @@ int main(int argc, char** argv)
     System sys;
     sys.regs.SP = 0xFEFE;
 
-    initMem(&sys);
+    initMem(&sys.mem);
+    
+    uint8_t* ordered[] = {&sys.regs.B, &sys.regs.C, &sys.regs.D, &sys.regs.E, &sys.regs.H, &sys.regs.L, NULL, &sys.regs.F};
+    memcpy(sys.regs.ordered, ordered, sizeof(ordered));
 
     if (loadrom(argv[1], &sys.mem) != 0)
     {
@@ -81,7 +85,7 @@ int main(int argc, char** argv)
 
     puts("Executing boot sequence");
 
-    sys.regs.PC = sys.mem.BOOT_ROM;
+    sys.regs.PC = sys.mem.memory;
     int count = 0;
     while (1)
     {
