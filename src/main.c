@@ -2,11 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <fcntl.h>
 #include "sys.h"
-
-
-
 
 int loadrom(char* path, Mem* memory)
 {
@@ -32,6 +30,11 @@ int loadrom(char* path, Mem* memory)
 void loadBootRom(Mem* memory)
 {
     FILE* bootRom = fopen("roms/DMG_ROM.bin", "rb");
+    if (bootRom == NULL)
+    {
+        puts("ERROR: BOOT ROM not found!\n");
+        exit(1);
+    }
     memcpy(memory->BOOT_ROM, memory->memory, 256);
     fread(memory->memory, 256, 1, bootRom);
     fclose(bootRom);
@@ -39,6 +42,15 @@ void loadBootRom(Mem* memory)
 
 void initMem(Mem* memory)
 {
+    memory->memory = (uint8_t*)malloc(65536 * sizeof(uint8_t));
+    memory->BOOT_ROM = (uint8_t*)malloc(256 * sizeof(uint8_t));
+    if (memory->memory == NULL || memory->BOOT_ROM == NULL)
+    {
+        puts("ERROR: Memory allocation failed!\n");
+        exit(1);
+    }
+
+
     memory->ROM = memory->memory;
     memory->Title = (char*) &memory->ROM[0x134];
 }
@@ -59,9 +71,9 @@ int main(int argc, char** argv)
     sys.regs.SP = 0xFEFE;
 
     initMem(&sys.mem);
-    
-    uint8_t* ordered[] = {&sys.regs.B, &sys.regs.C, &sys.regs.D, &sys.regs.E, &sys.regs.H, &sys.regs.L, NULL, &sys.regs.F};
-    memcpy(sys.regs.ordered, ordered, sizeof(ordered));
+
+    uint8_t* ordered[] = {&sys.regs.B, &sys.regs.C, &sys.regs.D, &sys.regs.E, &sys.regs.H, &sys.regs.L, NULL, &sys.regs.A};
+    sys.regs.ordered = ordered;
 
     if (loadrom(argv[1], &sys.mem) != 0)
     {
@@ -101,7 +113,7 @@ int main(int argc, char** argv)
         {
             executeOperation(&sys);
         }
-        
+        printf("%d\n", count);
     }
     return 0;    
 
