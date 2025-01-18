@@ -64,11 +64,11 @@ typedef struct registers
 
 typedef struct mem
 {
-    uint8_t memory[65536];
+    uint8_t* memory;
     uint8_t const* ROM;
     uint8_t* VRAM;
     const char* Title;
-    uint8_t BOOT_ROM[256];
+    uint8_t* BOOT_ROM;
  
 }  Mem;
 
@@ -79,5 +79,7 @@ typedef struct system
     long int cycles;
     
 } System;
+
+
 
 #endif // SYS_H

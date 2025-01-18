@@ -141,12 +141,11 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x20:
-        puts("Operation 0x20, JR(Regs->NZ)(Regs->SP) not implemented!");
-        exit(1);
+        jr_conditional(sys);
         break;
     case 0x21:
         printf("%d\n", *((uint16_t*)(sys->regs.PC + 1)));
-        load16(&sys->regs.HL, *(sys->regs.PC + 1));
+        load16(&sys->regs.HL, *(uint16_t*)(sys->regs.PC + 1));
         sys->regs.PC += 3;
         break;
     case 0x22:
@@ -174,8 +173,7 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x28:
-        puts("Operation 0x28, JR(Regs->Z)(Regs->SP) not implemented!");
-        exit(1);
+        jr_conditional(sys);
         break;
     case 0x29:
         puts("Operation 0x29, ADD(Regs->HL)(Regs->HL) not implemented!");
@@ -206,8 +204,7 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x30:
-        puts("Operation 0x30, JR(Regs->NC)(Regs->SP) not implemented!");
-        exit(1);
+        jr_conditional(sys);
         break;
     case 0x31:
         load16(&sys->regs.SP, *(sys->regs.PC + 1));
@@ -237,8 +234,7 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x38:
-        puts("Operation 0x38, JR(Regs->C)(Regs->SP) not implemented!");
-        exit(1);
+        jr_conditional(sys);
         break;
     case 0x39:
         puts("Operation 0x39, ADD(Regs->HL)(Regs->SP) not implemented!");
@@ -1030,9 +1026,22 @@ void executeOperation(System *sys)
     }
 }
 
+int between(uint8_t val, uint8_t min, uint8_t max)
+{
+    return val >= min && val <= max;
+}
 
 void executePrefixOperation(System *sys)
 {
+    printf("OP: %x, Address: %d\n", *sys->regs.PC, (uint16_t)(sys->regs.PC - sys->mem.memory));
+    uint8_t op = *sys->regs.PC;
+
+    if (between(op, 0x40, 0x7f))
+    {
+        bit(sys);
+        return;
+    }
+
     switch (*sys->regs.PC)
     {
 
@@ -1289,202 +1298,6 @@ void executePrefixOperation(System *sys)
         break;
     case 0x3f:
         puts("Operation CB 0x3f, SRL(Regs->A)(0) not implemented!");
-        exit(1);
-        break;
-    case 0x40:
-        puts("Operation CB 0x40, BIT(0)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x41:
-        puts("Operation CB 0x41, BIT(0)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x42:
-        puts("Operation CB 0x42, BIT(0)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x43:
-        puts("Operation CB 0x43, BIT(0)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x44:
-        puts("Operation CB 0x44, BIT(0)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x45:
-        puts("Operation CB 0x45, BIT(0)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x46:
-        puts("Operation CB 0x46, BIT(0)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x47:
-        puts("Operation CB 0x47, BIT(0)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x48:
-        puts("Operation CB 0x48, BIT(0)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x49:
-        puts("Operation CB 0x49, BIT(0)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x4a:
-        puts("Operation CB 0x4a, BIT(0)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x4b:
-        puts("Operation CB 0x4b, BIT(0)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x4c:
-        puts("Operation CB 0x4c, BIT(0)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x4d:
-        puts("Operation CB 0x4d, BIT(0)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x4e:
-        puts("Operation CB 0x4e, BIT(0)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x4f:
-        puts("Operation CB 0x4f, BIT(0)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x50:
-        puts("Operation CB 0x50, BIT(0)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x51:
-        puts("Operation CB 0x51, BIT(0)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x52:
-        puts("Operation CB 0x52, BIT(0)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x53:
-        puts("Operation CB 0x53, BIT(0)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x54:
-        puts("Operation CB 0x54, BIT(0)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x55:
-        puts("Operation CB 0x55, BIT(0)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x56:
-        puts("Operation CB 0x56, BIT(0)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x57:
-        puts("Operation CB 0x57, BIT(0)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x58:
-        puts("Operation CB 0x58, BIT(0)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x59:
-        puts("Operation CB 0x59, BIT(0)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x5a:
-        puts("Operation CB 0x5a, BIT(0)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x5b:
-        puts("Operation CB 0x5b, BIT(0)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x5c:
-        puts("Operation CB 0x5c, BIT(0)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x5d:
-        puts("Operation CB 0x5d, BIT(0)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x5e:
-        puts("Operation CB 0x5e, BIT(0)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x5f:
-        puts("Operation CB 0x5f, BIT(0)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x60:
-        puts("Operation CB 0x60, BIT(0)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x61:
-        puts("Operation CB 0x61, BIT(0)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x62:
-        puts("Operation CB 0x62, BIT(0)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x63:
-        puts("Operation CB 0x63, BIT(0)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x64:
-        puts("Operation CB 0x64, BIT(0)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x65:
-        puts("Operation CB 0x65, BIT(0)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x66:
-        puts("Operation CB 0x66, BIT(0)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x67:
-        puts("Operation CB 0x67, BIT(0)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x68:
-        puts("Operation CB 0x68, BIT(0)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x69:
-        puts("Operation CB 0x69, BIT(0)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x6a:
-        puts("Operation CB 0x6a, BIT(0)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x6b:
-        puts("Operation CB 0x6b, BIT(0)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x6c:
-        puts("Operation CB 0x6c, BIT(0)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x6d:
-        puts("Operation CB 0x6d, BIT(0)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x6e:
-        puts("Operation CB 0x6e, BIT(0)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x6f:
-        puts("Operation CB 0x6f, BIT(0)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x70:
-        puts("Operation CB 0x70, BIT(0)(Regs->B) not implemented!");
         exit(1);
         break;
     case 0x71:

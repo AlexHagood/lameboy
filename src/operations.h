@@ -4,3 +4,5 @@
 void xorA(uint8_t n, System *sys);
 void load16(uint16_t *dest, uint16_t src);
 void ldd(System *sys);
+void bit(System *sys);
+void jr_conditional(System *sys);
