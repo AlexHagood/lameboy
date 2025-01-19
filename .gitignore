@@ -5,3 +5,4 @@ lameboy
 *.o
 .venv
 __pycache__/
+graphics

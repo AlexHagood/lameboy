@@ -13,6 +13,10 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+graphics: $(SRC_DIR)/graphics.c
+	$(CC) $(CFLAGS) -o graphics $(SRC_DIR)/graphics.c -lSDL2
+
+
 .PHONY: clean
 clean:
 	rm -f $(OBJS) $(TARGET)
