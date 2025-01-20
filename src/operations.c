@@ -12,6 +12,20 @@ void load16(uint16_t *dest, uint16_t src)
     *dest = src;
 }
 
+void load8(uint8_t *dest, uint8_t src, System *sys)
+{
+    *dest = src;
+    sys->regs.PC++;
+}
+
+void load8registers(System *sys)
+{
+    int op = *sys->regs.PC - 0x40;
+    uint8_t src = *(sys->regs.ordered[op % 8]);
+    uint8_t *dest = sys->regs.ordered[op / 8];
+    load8(dest, src, sys);
+}
+
 void xorA(uint8_t n, System *sys)
 {
     sys->regs.A ^= n;

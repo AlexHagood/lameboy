@@ -5,19 +5,35 @@
 #include "sys.h"
 #include "operations.h"
 
+int between(uint8_t val, uint8_t min, uint8_t max)
+{
+    return val >= min && val <= max;
+}
 
 void executeOperation(System *sys)
 {
     printf("OP: %x, Address: %d\n", *sys->regs.PC, (uint16_t)(sys->regs.PC - sys->mem.memory));
+
+    if (*sys->regs.PC == 0x67)
+    {
+        printf("Halt\n");
+        exit(1);
+    }
+
+    if (between(*sys->regs.PC, 0x40, 0x7F)){
+        load8registers(sys);
+        return;
+    }
+
     switch (*sys->regs.PC)
     {
     case 0x0:
         puts("Operation 0x0, NOP(0)(0) not implemented!");
         exit(1);
-    break;
+        break;
     case 0x1:
-        load16(&sys->regs.BC, *(sys->regs.PC + 1));
-        sys->regs.PC += 3;
+        load16(&sys->regs.BC, *(++sys->regs.PC));
+        sys->regs.PC += 2;
         break;
     case 0x2:
         puts("Operation 0x2, LD(Regs->BC)(Regs->A) not implemented!");
@@ -36,8 +52,8 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x6:
-        puts("Operation 0x6, LD(Regs->B)(Regs->SP) not implemented!");
-        exit(1);
+        load8(&sys->regs.B, *(sys->regs.PC + 1), sys);
+        sys->regs.PC += 1;
         break;
     case 0x7:
         puts("Operation 0x7, RLCA(0)(0) not implemented!");
@@ -68,8 +84,8 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0xe:
-        puts("Operation 0xe, LD(Regs->C)(Regs->SP) not implemented!");
-        exit(1);
+        load8(&sys->regs.C, *(sys->regs.PC + 1), sys);
+        sys->regs.PC += 1;
         break;
     case 0xf:
         puts("Operation 0xf, RRCA(0)(0) not implemented!");
@@ -101,8 +117,8 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x16:
-        puts("Operation 0x16, LD(Regs->D)(Regs->SP) not implemented!");
-        exit(1);
+        load8(&sys->regs.D, *(sys->regs.PC + 1), sys);
+        sys->regs.PC += 1;
         break;
     case 0x17:
         puts("Operation 0x17, RLA(0)(0) not implemented!");
@@ -133,8 +149,8 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x1e:
-        puts("Operation 0x1e, LD(Regs->E)(Regs->SP) not implemented!");
-        exit(1);
+        load8(&sys->regs.E, *(sys->regs.PC + 1), sys);
+        sys->regs.PC += 1;
         break;
     case 0x1f:
         puts("Operation 0x1f, RRA(0)(0) not implemented!");
@@ -144,8 +160,8 @@ void executeOperation(System *sys)
         jr_conditional(sys);
         break;
     case 0x21:
-        printf("%d\n", *((uint16_t*)(sys->regs.PC + 1)));
-        load16(&sys->regs.HL, *(uint16_t*)(sys->regs.PC + 1));
+        printf("%d\n", *((uint16_t *)(sys->regs.PC + 1)));
+        load16(&sys->regs.HL, *(uint16_t *)(sys->regs.PC + 1));
         sys->regs.PC += 3;
         break;
     case 0x22:
@@ -165,8 +181,8 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x26:
-        puts("Operation 0x26, LD(Regs->H)(Regs->SP) not implemented!");
-        exit(1);
+        load8(&sys->regs.H, *(sys->regs.PC + 1), sys);
+        sys->regs.PC += 1;
         break;
     case 0x27:
         puts("Operation 0x27, DAA(0)(0) not implemented!");
@@ -196,8 +212,8 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x2e:
-        puts("Operation 0x2e, LD(Regs->L)(Regs->SP) not implemented!");
-        exit(1);
+        load8(&sys->regs.L, *(sys->regs.PC + 1), sys);
+        sys->regs.PC += 1;
         break;
     case 0x2f:
         puts("Operation 0x2f, CPL(0)(0) not implemented!");
@@ -261,262 +277,6 @@ void executeOperation(System *sys)
         break;
     case 0x3f:
         puts("Operation 0x3f, CCF(0)(0) not implemented!");
-        exit(1);
-        break;
-    case 0x40:
-        puts("Operation 0x40, LD(Regs->B)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x41:
-        puts("Operation 0x41, LD(Regs->B)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x42:
-        puts("Operation 0x42, LD(Regs->B)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x43:
-        puts("Operation 0x43, LD(Regs->B)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x44:
-        puts("Operation 0x44, LD(Regs->B)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x45:
-        puts("Operation 0x45, LD(Regs->B)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x46:
-        puts("Operation 0x46, LD(Regs->B)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x47:
-        puts("Operation 0x47, LD(Regs->B)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x48:
-        puts("Operation 0x48, LD(Regs->C)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x49:
-        puts("Operation 0x49, LD(Regs->C)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x4a:
-        puts("Operation 0x4a, LD(Regs->C)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x4b:
-        puts("Operation 0x4b, LD(Regs->C)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x4c:
-        puts("Operation 0x4c, LD(Regs->C)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x4d:
-        puts("Operation 0x4d, LD(Regs->C)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x4e:
-        puts("Operation 0x4e, LD(Regs->C)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x4f:
-        puts("Operation 0x4f, LD(Regs->C)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x50:
-        puts("Operation 0x50, LD(Regs->D)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x51:
-        puts("Operation 0x51, LD(Regs->D)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x52:
-        puts("Operation 0x52, LD(Regs->D)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x53:
-        puts("Operation 0x53, LD(Regs->D)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x54:
-        puts("Operation 0x54, LD(Regs->D)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x55:
-        puts("Operation 0x55, LD(Regs->D)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x56:
-        puts("Operation 0x56, LD(Regs->D)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x57:
-        puts("Operation 0x57, LD(Regs->D)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x58:
-        puts("Operation 0x58, LD(Regs->E)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x59:
-        puts("Operation 0x59, LD(Regs->E)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x5a:
-        puts("Operation 0x5a, LD(Regs->E)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x5b:
-        puts("Operation 0x5b, LD(Regs->E)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x5c:
-        puts("Operation 0x5c, LD(Regs->E)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x5d:
-        puts("Operation 0x5d, LD(Regs->E)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x5e:
-        puts("Operation 0x5e, LD(Regs->E)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x5f:
-        puts("Operation 0x5f, LD(Regs->E)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x60:
-        puts("Operation 0x60, LD(Regs->H)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x61:
-        puts("Operation 0x61, LD(Regs->H)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x62:
-        puts("Operation 0x62, LD(Regs->H)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x63:
-        puts("Operation 0x63, LD(Regs->H)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x64:
-        puts("Operation 0x64, LD(Regs->H)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x65:
-        puts("Operation 0x65, LD(Regs->H)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x66:
-        puts("Operation 0x66, LD(Regs->H)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x67:
-        puts("Operation 0x67, LD(Regs->H)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x68:
-        puts("Operation 0x68, LD(Regs->L)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x69:
-        puts("Operation 0x69, LD(Regs->L)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x6a:
-        puts("Operation 0x6a, LD(Regs->L)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x6b:
-        puts("Operation 0x6b, LD(Regs->L)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x6c:
-        puts("Operation 0x6c, LD(Regs->L)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x6d:
-        puts("Operation 0x6d, LD(Regs->L)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x6e:
-        puts("Operation 0x6e, LD(Regs->L)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x6f:
-        puts("Operation 0x6f, LD(Regs->L)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x70:
-        puts("Operation 0x70, LD(Regs->HL)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x71:
-        puts("Operation 0x71, LD(Regs->HL)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x72:
-        puts("Operation 0x72, LD(Regs->HL)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x73:
-        puts("Operation 0x73, LD(Regs->HL)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x74:
-        puts("Operation 0x74, LD(Regs->HL)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x75:
-        puts("Operation 0x75, LD(Regs->HL)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x76:
-        puts("Operation 0x76, HALT(0)(0) not implemented!");
-        exit(1);
-        break;
-    case 0x77:
-        puts("Operation 0x77, LD(Regs->HL)(Regs->A) not implemented!");
-        exit(1);
-        break;
-    case 0x78:
-        puts("Operation 0x78, LD(Regs->A)(Regs->B) not implemented!");
-        exit(1);
-        break;
-    case 0x79:
-        puts("Operation 0x79, LD(Regs->A)(Regs->C) not implemented!");
-        exit(1);
-        break;
-    case 0x7a:
-        puts("Operation 0x7a, LD(Regs->A)(Regs->D) not implemented!");
-        exit(1);
-        break;
-    case 0x7b:
-        puts("Operation 0x7b, LD(Regs->A)(Regs->E) not implemented!");
-        exit(1);
-        break;
-    case 0x7c:
-        puts("Operation 0x7c, LD(Regs->A)(Regs->H) not implemented!");
-        exit(1);
-        break;
-    case 0x7d:
-        puts("Operation 0x7d, LD(Regs->A)(Regs->L) not implemented!");
-        exit(1);
-        break;
-    case 0x7e:
-        puts("Operation 0x7e, LD(Regs->A)(Regs->HL) not implemented!");
-        exit(1);
-        break;
-    case 0x7f:
-        puts("Operation 0x7f, LD(Regs->A)(Regs->A) not implemented!");
         exit(1);
         break;
     case 0x80:
@@ -1024,11 +784,6 @@ void executeOperation(System *sys)
         exit(1);
         break;
     }
-}
-
-int between(uint8_t val, uint8_t min, uint8_t max)
-{
-    return val >= min && val <= max;
 }
 
 void executePrefixOperation(System *sys)
@@ -1941,8 +1696,6 @@ void executePrefixOperation(System *sys)
 //     *sys->regs.HL -= 1;
 //     sys->regs.PC += 1;
 // }
-
-
 
 // void Load(opCode *operation, System *sys)
 // {
