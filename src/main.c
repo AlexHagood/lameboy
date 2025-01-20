@@ -56,8 +56,6 @@ void initMem(Mem* memory)
 }
 
 
-
-
 int main(int argc, char** argv)
 {
 
