@@ -2,10 +2,20 @@
 #include "sys.h"
 #define SET(flag) (sys->regs.flag = 1)
 #define RESET(flag) (sys->regs.flag = 0)
-
+#define FLAG_CONDITION(flag, condition) if (condition) {sys->regs.flag = 1;} else {sys->regs.flag = 0;}
 
 
 void exit(int status);
+
+
+void inc(uint8_t *reg, System *sys)
+{
+    *reg += 1;
+    FLAG_CONDITION(Zf, *reg == 0);
+    RESET(Nf);
+    FLAG_CONDITION(Hf, ((*reg - 1) & 0x0F) + 1 > 0x0F);
+    sys->regs.PC += 1;
+}
 
 void load16(uint16_t *dest, uint16_t src)
 {
@@ -23,6 +33,14 @@ void load8registers(System *sys)
     int op = *sys->regs.PC - 0x40;
     uint8_t src = *(sys->regs.ordered[op % 8]);
     uint8_t *dest = sys->regs.ordered[op / 8];
+    if (src == 0)
+    {
+        src = sys->mem.memory[sys->regs.HL];
+    }
+    if (dest == 0)
+    {
+        dest = &sys->mem.memory[sys->regs.HL];
+    } 
     load8(dest, src, sys);
 }
 

@@ -6,3 +6,7 @@ void load16(uint16_t *dest, uint16_t src);
 void ldd(System *sys);
 void bit(System *sys);
 void jr_conditional(System *sys);
+void load16(uint16_t *dest, uint16_t src);
+void load8(uint8_t *dest, uint8_t src, System *sys);
+void load8registers(System *sys);
+void inc(uint8_t *reg, System *sys);
