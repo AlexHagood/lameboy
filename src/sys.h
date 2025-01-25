@@ -60,6 +60,21 @@ typedef struct registers
     uint16_t SP;
     uint8_t** ordered;
 
+    // IO Registers
+    uint8_t* DIV; // Divider Register
+    uint8_t* TIMA; // Timer Counter
+    uint8_t* TMA; // Timer Modulo
+    uint8_t* TAC; // Timer Control
+    uint8_t* IF; // Interrupt Flag
+
+    uint8_t* LCDC; // LCD Control
+    uint8_t* SCY; // Scroll Y
+    uint8_t* SCX; // Scroll X
+    uint8_t* LY;
+    uint8_t* LYC;
+
+
+
 } Registers;
 
 typedef struct mem
