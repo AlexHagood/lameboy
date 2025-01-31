@@ -67,12 +67,13 @@ int main(int argc, char** argv)
     }
 
     System sys;
-    sys.regs.SP = 0xFEFE;
+    
 
     initMem(&sys.mem);
 
     uint8_t* ordered[] = {&sys.regs.B, &sys.regs.C, &sys.regs.D, &sys.regs.E, &sys.regs.H, &sys.regs.L, NULL, &sys.regs.A};
     sys.regs.ordered = ordered;
+
 
     if (loadrom(argv[1], &sys.mem) != 0)
     {
@@ -99,6 +100,7 @@ int main(int argc, char** argv)
     display(sys);
 
     sys.regs.PC = sys.mem.memory;
+    sys.regs.SP = &sys.mem.memory[0xFEFE];
     int count = 0;
     while (1)
     {

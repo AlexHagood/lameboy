@@ -533,8 +533,7 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0xc4:
-        puts("Operation 0xc4, CALL(Regs->NZ)(Regs->SP) not implemented!");
-        exit(1);
+        call(sys, sys->regs.Zf == 0);
         break;
     case 0xc5:
         puts("Operation 0xc5, PUSH(Regs->BC)(0) not implemented!");
@@ -565,12 +564,10 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0xcc:
-        puts("Operation 0xcc, CALL(Regs->Z)(Regs->SP) not implemented!");
-        exit(1);
+        call(sys, sys->regs.Zf == 1);
         break;
     case 0xcd:
-        puts("Operation 0xcd, CALL(Regs->SP)(0) not implemented!");
-        exit(1);
+        call(sys, 1);
         break;
     case 0xce:
         puts("Operation 0xce, ADC(Regs->A)(Regs->SP) not implemented!");
@@ -597,8 +594,7 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0xd4:
-        puts("Operation 0xd4, CALL(Regs->NC)(Regs->SP) not implemented!");
-        exit(1);
+        call(sys, sys->regs.Cf == 0);
         break;
     case 0xd5:
         puts("Operation 0xd5, PUSH(Regs->DE)(0) not implemented!");
@@ -629,8 +625,7 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0xdc:
-        puts("Operation 0xdc, CALL(Regs->C)(Regs->SP) not implemented!");
-        exit(1);
+        call(sys, sys->regs.Cf == 1);
         break;
     case 0xdd:
         puts("Operation 0xdd, ILLEGAL_DD(0)(0) not implemented!");

@@ -56,8 +56,9 @@ typedef struct registers
     };
 
     // Special Purpose Registers
+    uint8_t *MemZero;
     uint8_t *PC;
-    uint16_t SP;
+    uint8_t *SP;
     uint8_t** ordered;
 
     // IO Registers

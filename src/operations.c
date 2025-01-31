@@ -111,3 +111,20 @@ void jr_conditional(System *sys)
         sys->regs.PC =  sys->regs.PC + offset;
     }
 }
+
+
+void call(System *sys, int condition)
+{
+    uint16_t jumpAddress = *(sys->regs.PC + 1);
+    if (condition)
+    {
+        sys->regs.SP -= 2;
+        *sys->regs.SP = sys->regs.PC + 3 - sys->mem.memory;
+        sys->regs.PC = sys->mem.memory + jumpAddress;
+    }
+    else
+    {
+        sys->regs.PC += 3;
+    }
+    exit(1);
+}

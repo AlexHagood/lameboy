@@ -10,3 +10,4 @@ void load16(uint16_t *dest, uint16_t src);
 void load8(uint8_t *dest, uint8_t src, System *sys);
 void load8registers(System *sys);
 void inc(uint8_t *reg, System *sys);
+void call(System *sys, int condition);
