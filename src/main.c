@@ -5,6 +5,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include "sys.h"
+#include "graphics.h"
 
 int loadrom(char* path, Mem* memory)
 {
@@ -94,6 +95,8 @@ int main(int argc, char** argv)
     loadBootRom(&sys.mem);
 
     puts("Executing boot sequence");
+
+    display(sys);
 
     sys.regs.PC = sys.mem.memory;
     int count = 0;

@@ -1,4 +1,6 @@
 #include <SDL2/SDL.h>
+#include "sys.h"
+
 
 #define COLOR0 155, 188, 15
 #define COLOR1 139, 172, 15
@@ -20,10 +22,15 @@ SDL_Event event;
 
 void drawScreen(uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H], SDL_Renderer *renderer);
 
-int main()
+int display(System sys)
 {
 
     uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H];
+
+
+    memset(screenBuffer, 0, sizeof(screenBuffer));
+
+    drawSprites(&sys.mem.ROM[0x30c7], screenBuffer);
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -57,12 +64,12 @@ int main()
         SDL_RenderClear(renderer);
         drawScreen(screenBuffer, renderer);
         SDL_RenderPresent(renderer);
-        for (int i = 0; i < SCREENBUF_W; i++)
-        {
-        for (int j = 0; j < SCREENBUF_H; j++)
-        {
-        screenBuffer[i][j] = CIRCULAR_SHIFT_LEFT(screenBuffer[i][j], 1, 8);
-        }}
+        // for (int i = 0; i < SCREENBUF_W; i++)
+        // {
+        // for (int j = 0; j < SCREENBUF_H; j++)
+        // {
+        // screenBuffer[i][j] = CIRCULAR_SHIFT_LEFT(screenBuffer[i][j], 1, 8);
+        // }}
 
 
         SDL_Delay(16);
@@ -73,16 +80,42 @@ int main()
     SDL_Quit();
 }
 
+void drawSprites(uint8_t tileData[0xfff], uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H])
+{
+    int sX = 0;
+    int sY = 0;
+    for (int tile = 0; tile < 256; tile++)
+    {
+        uint8_t* sprite = &tileData[tile * 16];
+        for (int y = 0; y < 8; y++)
+        {
+            screenBuffer[sX][sY + y] = sprite[y*2];
+            screenBuffer[sX + 1][sY + y] = sprite[y*2 + 1];
+
+        }
+        sX += 2;
+        if (sX % SCREENBUF_W == 0)
+        {
+            sX = 0;
+            sY += 8;
+        }
+    }
+
+}
+
 void drawScreen(uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H], SDL_Renderer *renderer)
 {
-    for (int x = 0; x < SCREENBUF_W; x++)
+    for (int x = 0; x < 20; x++)
     {
         for (int y = 0; y < SCREENBUF_H; y++)
         {
-            for (int k = 0; k < 4; k++)
+            for (int k = 0; k < 8; k++)
             {
-                int shift = 0b11 << (k * 2);
-                int color = (screenBuffer[x][y] & shift) >> (k * 2);
+
+                int pallete_lo = (screenBuffer[x * 2][y] & (0x80 >> k)) != 0;
+                int pallete_hi = (screenBuffer[x * 2 + 1][y] & (0x80 >> k)) != 0;
+                int color = (pallete_hi << 1) | pallete_lo;
+
                 switch (color)
                 {
                 case 0:
@@ -98,7 +131,7 @@ void drawScreen(uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H], SDL_Renderer *re
                     SDL_SetRenderDrawColor(renderer, COLOR3, 255);
                     break;
                 }
-                SDL_RenderDrawPoint(renderer, x * 4 + k, y);
+                SDL_RenderDrawPoint(renderer, x * 8 + k, y);
             }
         }
     }
