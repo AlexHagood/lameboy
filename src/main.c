@@ -106,14 +106,17 @@ int main(int argc, char** argv)
     {
         count += 1;
         uint8_t opCode = *sys.regs.PC;
-
+        
         if (opCode == 0xCB) // CB prefixed opcode
         {
             sys.regs.PC += 1;
+            opCode = *sys.regs.PC;
+            printf("OP: CB %x, Address: %x\n", opCode, (uint16_t)(sys.regs.PC - sys.mem.memory));
             executePrefixOperation(&sys);
         }
         else
         {
+            printf("OP: %x, Address: %x\n", opCode, (uint16_t)(sys.regs.PC - sys.mem.memory));
             executeOperation(&sys);
         }
         printf("%d\n", count);

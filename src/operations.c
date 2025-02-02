@@ -79,6 +79,13 @@ void ldd(System *sys)
     sys->regs.PC += 1;
 }
 
+void ldi(System *sys)
+{
+    sys->mem.memory[sys->regs.HL] = sys->regs.A;
+    sys->regs.HL += 1;
+    sys->regs.PC += 1;
+}
+
 void bit(System *sys)
 {
     uint8_t op = *sys->regs.PC;
@@ -126,5 +133,56 @@ void call(System *sys, int condition)
     {
         sys->regs.PC += 3;
     }
-    exit(1);
+};
+
+
+void push(System *sys, uint16_t reg)
+{
+    sys->regs.SP -= 2;
+    *(uint16_t*)sys->regs.SP = reg;
+    sys->regs.PC += 1;
+}
+
+void pop(System* sys, uint16_t* reg)
+{
+    *reg = *sys->regs.PC;
+    sys->regs.PC += 1;
+    sys->regs.SP += 2;
+}
+
+void rotate_left(System *sys, uint8_t *reg)
+{
+    int c = sys->regs.Cf;
+
+    *reg = *reg << 1;
+    *reg &= c;
+
+    FLAG_CONDITION(Cf, (*reg & 0x40) != 0);
+    RESET(Nf);
+    RESET(Hf);
+    FLAG_CONDITION(Zf, *reg == 0);
+
+    sys->regs.PC += 1;
+}
+
+void decrement(System *sys, uint8_t *reg)
+{
+    int half_carry = ((*reg & 0xf) == 0 && (*--reg & 0xf) == 0xf);
+    FLAG_CONDITION(Hf, half_carry);
+    FLAG_CONDITION(Zf, *reg == 0);
+    SET(Nf);
+    sys->regs.PC += 1;
+}
+
+void increment(System *sys, uint16_t* reg)
+{
+    *reg += 1;
+    sys->regs.PC += 1;   
+}
+
+void ret(System *sys)
+{
+    int address = *sys->regs.SP;
+    sys->regs.SP += 2;
+    sys->regs.PC = sys->mem.memory + address;
 }
