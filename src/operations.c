@@ -3,6 +3,7 @@
 #define SET(flag) (sys->regs.flag = 1)
 #define RESET(flag) (sys->regs.flag = 0)
 #define FLAG_CONDITION(flag, condition) if (condition) {sys->regs.flag = 1;} else {sys->regs.flag = 0;}
+#define CHECK_CARRY(N, Int1, Int2) (((Int1) & (1 << N)) + ((Int2) & (1 << N)) > (1 << N))
 
 
 void exit(int status);
@@ -193,5 +194,14 @@ void cp(System *sys, uint8_t* reg)
     SET(Nf);
     FLAG_CONDITION(Hf, (sys->regs.A & 0x0F) < (*reg & 0x0F));
     FLAG_CONDITION(Cf, sys->regs.A < *reg);
+    sys->regs.PC += 1;
+}
+
+void add16(System *sys, uint16_t reg)
+{
+    RESET(Nf);
+    FLAG_CONDITION(Cf, CHECK_CARRY(15, sys->regs.HL, reg));
+    FLAG_CONDITION(Hf, CHECK_CARRY(11, sys->regs.HL, reg));
+    sys->regs.HL += reg;
     sys->regs.PC += 1;
 }

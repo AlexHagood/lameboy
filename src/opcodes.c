@@ -59,8 +59,7 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x9:
-        puts("Operation 0x9, ADD(Regs->HL)(Regs->BC) not implemented!");
-        exit(1);
+        add16(sys, sys->regs.BC);
         break;
     case 0xa:
         load8(&sys->regs.A, sys->mem.memory[sys->regs.BC], sys);
@@ -116,8 +115,7 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x19:
-        puts("Operation 0x19, ADD(Regs->HL)(Regs->DE) not implemented!");
-        exit(1);
+        add16(sys, sys->regs.DE);
         break;
     case 0x1a:
         load8(&sys->regs.A, sys->mem.memory[sys->regs.DE], sys);
@@ -172,8 +170,7 @@ void executeOperation(System *sys)
         jr_conditional(sys);
         break;
     case 0x29:
-        puts("Operation 0x29, ADD(Regs->HL)(Regs->HL) not implemented!");
-        exit(1);
+        add16(sys, sys->regs.HL);
         break;
     case 0x2a:
         load8(&sys->regs.A, sys->mem.memory[sys->regs.HL], sys);
@@ -229,8 +226,7 @@ void executeOperation(System *sys)
         jr_conditional(sys);
         break;
     case 0x39:
-        puts("Operation 0x39, ADD(Regs->HL)(Regs->SP) not implemented!");
-        exit(1);
+        add16(sys, (uint16_t)(sys->regs.SP - sys->mem.memory));
         break;
     case 0x3a:
         ldd(sys);
