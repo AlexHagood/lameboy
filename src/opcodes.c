@@ -14,7 +14,7 @@ void executeOperation(System *sys)
 {
 
 
-    if (*sys->regs.PC == 0x67)
+    if (*sys->regs.PC == 0x76)
     {
         printf("Halt\n");
         exit(1);
@@ -111,8 +111,7 @@ void executeOperation(System *sys)
         sys->regs.Zf = 0;
         break;
     case 0x18:
-        puts("Operation 0x18, JR(Regs->SP)(0) not implemented!");
-        exit(1);
+        sys->regs.PC = sys->regs.PC + 2 + (int8_t)*(sys->regs.PC + 1);
         break;
     case 0x19:
         add16(sys, sys->regs.DE);

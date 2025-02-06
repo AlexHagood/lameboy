@@ -22,3 +22,4 @@ void ldi(System *sys);
 void increment(System *sys, uint16_t* reg);
 void ret(System *sys);
 void cp(System *sys, uint8_t* reg);
+void add16(System *sys, uint16_t reg);
