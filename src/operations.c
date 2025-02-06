@@ -168,10 +168,11 @@ void rotate_left(System *sys, uint8_t *reg)
 
 void decrement(System *sys, uint8_t *reg)
 {
-    int half_carry = ((*reg & 0xf) == 0 && (*--reg & 0xf) == 0xf);
+    int half_carry = ((*reg & 0xf) == 0 && ((*reg - 1) & 0xf) == 0xf);
     FLAG_CONDITION(Hf, half_carry);
     FLAG_CONDITION(Zf, *reg == 0);
     SET(Nf);
+    *reg -= 1;
     sys->regs.PC += 1;
 }
 
