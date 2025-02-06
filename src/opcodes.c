@@ -35,12 +35,10 @@ void executeOperation(System *sys)
         sys->regs.PC += 2;
         break;
     case 0x2:
-        puts("Operation 0x2, LD(Regs->BC)(Regs->A) not implemented!");
-        exit(1);
+        load8(&sys->mem.memory[sys->regs.BC], sys->regs.A, sys);
         break;
     case 0x3:
-        puts("Operation 0x3, INC(Regs->BC)(0) not implemented!");
-        exit(1);
+        increment(sys, &sys->regs.BC);
         break;
     case 0x4:
         inc(&sys->regs.B, sys);
@@ -75,8 +73,7 @@ void executeOperation(System *sys)
         inc(&sys->regs.C, sys);
         break;
     case 0xd:
-        puts("Operation 0xd, DEC(Regs->C)(0) not implemented!");
-        exit(1);
+        decrement(sys, &sys->regs.C);
         break;
     case 0xe:
         load8(&sys->regs.C, *(sys->regs.PC + 1), sys);
@@ -91,12 +88,11 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0x11:
-        load16(&sys->regs.SP, *(sys->regs.PC + 1));
+        load16(&sys->regs.DE, *(sys->regs.PC + 1));
         sys->regs.PC += 3;
         break;
     case 0x12:
-        puts("Operation 0x12, LD(Regs->DE)(Regs->A) not implemented!");
-        exit(1);
+        load8(&sys->mem.memory[sys->regs.DE], sys->regs.A, sys);
         break;
     case 0x13:
         increment(sys, &sys->regs.DE);
@@ -105,8 +101,7 @@ void executeOperation(System *sys)
         inc(&sys->regs.D, sys);
         break;
     case 0x15:
-        puts("Operation 0x15, DEC(Regs->D)(0) not implemented!");
-        exit(1);
+        decrement(sys, &sys->regs.D);
         break;
     case 0x16:
         load8(&sys->regs.D, *(sys->regs.PC + 1), sys);
@@ -135,8 +130,7 @@ void executeOperation(System *sys)
         inc(&sys->regs.E, sys);
         break;
     case 0x1d:
-        puts("Operation 0x1d, DEC(Regs->E)(0) not implemented!");
-        exit(1);
+        decrement(sys, &sys->regs.E);
         break;
     case 0x1e:
         load8(&sys->regs.E, *(sys->regs.PC + 1), sys);
@@ -164,8 +158,7 @@ void executeOperation(System *sys)
         inc(&sys->regs.H, sys);
         break;
     case 0x25:
-        puts("Operation 0x25, DEC(Regs->H)(0) not implemented!");
-        exit(1);
+        decrement(sys, &sys->regs.H);
         break;
     case 0x26:
         load8(&sys->regs.H, *(sys->regs.PC + 1), sys);
@@ -194,8 +187,7 @@ void executeOperation(System *sys)
         inc(&sys->regs.L, sys);
         break;
     case 0x2d:
-        puts("Operation 0x2d, DEC(Regs->L)(0) not implemented!");
-        exit(1);
+        decrement(sys, &sys->regs.L);
         break;
     case 0x2e:
         load8(&sys->regs.L, *(sys->regs.PC + 1), sys);
@@ -209,22 +201,21 @@ void executeOperation(System *sys)
         jr_conditional(sys);
         break;
     case 0x31:
-        load16(&sys->regs.SP, *(sys->regs.PC + 1));
+        sys->regs.SP = sys->mem.memory + *(sys->regs.PC + 1);
         sys->regs.PC += 3;
         break;
     case 0x32:
         ldd(sys);
         break;
     case 0x33:
-        puts("Operation 0x33, INC(Regs->SP)(0) not implemented!");
-        exit(1);
+        sys->regs.SP += 1;
+        sys->regs.PC += 1;
         break;
     case 0x34:
         inc(&sys->mem.memory[sys->regs.HL], sys);
         break;
     case 0x35:
-        puts("Operation 0x35, DEC(Regs->HL)(0) not implemented!");
-        exit(1);
+        decrement(sys, &sys->mem.memory[sys->regs.HL]);
         break;
     case 0x36:
         puts("Operation 0x36, LD(Regs->HL)(Regs->SP) not implemented!");
@@ -723,8 +714,8 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0xf9:
-        puts("Operation 0xf9, LD(Regs->SP)(Regs->HL) not implemented!");
-        exit(1);
+        sys->regs.SP = sys->mem.memory + sys->regs.HL;
+        sys->regs.PC += 1;
         break;
     case 0xfa:
         puts("Operation 0xfa, LD(Regs->A)(Regs->SP) not implemented!");
