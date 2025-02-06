@@ -186,3 +186,12 @@ void ret(System *sys)
     sys->regs.SP += 2;
     sys->regs.PC = sys->mem.memory + address;
 }
+
+void cp(System *sys, uint8_t* reg)
+{
+    FLAG_CONDITION(Zf, (sys->regs.A - *reg) == 0);
+    SET(Nf);
+    FLAG_CONDITION(Hf, (sys->regs.A & 0x0F) < (*reg & 0x0F));
+    FLAG_CONDITION(Cf, sys->regs.A < *reg);
+    sys->regs.PC += 1;
+}

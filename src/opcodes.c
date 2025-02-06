@@ -28,8 +28,7 @@ void executeOperation(System *sys)
     switch (*sys->regs.PC)
     {
     case 0x0:
-        puts("Operation 0x0, NOP(0)(0) not implemented!");
-        exit(1);
+        sys->regs.PC += 1;
         break;
     case 0x1:
         load16(&sys->regs.BC, *(++sys->regs.PC));
@@ -667,8 +666,8 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0xea:
-        puts("Operation 0xea, LD(Regs->SP)(Regs->A) not implemented!");
-        exit(1);
+        load8(sys->mem.memory + *(sys->regs.PC + 1), sys->regs.A, sys);
+        sys->regs.PC += 2;
         break;
     case 0xeb:
         puts("Operation 0xeb, ILLEGAL_EB(0)(0) not implemented!");
@@ -744,8 +743,7 @@ void executeOperation(System *sys)
         exit(1);
         break;
     case 0xfe:
-        puts("Operation 0xfe, CP(Regs->A)(Regs->SP) not implemented!");
-        exit(1);
+        cp(sys, sys->regs.PC++);
         break;
     case 0xff:
         puts("Operation 0xff, RST(Regs->SP)(0) not implemented!");
