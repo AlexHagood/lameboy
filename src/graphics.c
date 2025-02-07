@@ -30,7 +30,7 @@ int display(System sys)
 
     memset(screenBuffer, 0, sizeof(screenBuffer));
 
-    drawSprites(&sys.mem.ROM[0x30c7], screenBuffer);
+    drawSprites(&sys.mem.ROM[0x30ae], screenBuffer);
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
