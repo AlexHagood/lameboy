@@ -97,5 +97,8 @@ typedef struct system
 } System;
 
 
+extern System sys;
+
+
 
 #endif // SYS_H

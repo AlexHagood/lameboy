@@ -7,6 +7,11 @@
 #include "sys.h"
 #include "graphics.h"
 
+System sys;
+
+void executeOperation();
+void executePrefixOperation();
+
 int loadrom(char* path, Mem* memory)
 {
     int romPtr = open(path, 0);
@@ -66,7 +71,6 @@ int main(int argc, char** argv)
         exit(1);
     }
 
-    System sys;
     
 
     initMem(&sys.mem);
@@ -112,12 +116,12 @@ int main(int argc, char** argv)
             sys.regs.PC += 1;
             opCode = *sys.regs.PC;
             printf("OP: CB %x, Address: %x\n", opCode, (uint16_t)(sys.regs.PC - sys.mem.memory));
-            executePrefixOperation(&sys);
+            executePrefixOperation();
         }
         else
         {
             printf("OP: %x, Address: %x\n", opCode, (uint16_t)(sys.regs.PC - sys.mem.memory));
-            executeOperation(&sys);
+            executeOperation();
         }
         printf("%d\n", count);
     }
