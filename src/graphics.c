@@ -18,20 +18,13 @@ const int SCREEN_HEIGHT = 576;
 
 SDL_Window *window = NULL;
 SDL_Surface *screenSurface = NULL;
+SDL_Renderer *renderer = NULL;
 SDL_Event event;
 
 void drawScreen(uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H], SDL_Renderer *renderer);
 
-int display(System sys)
+void init_graphics()
 {
-
-    uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H];
-
-
-    memset(screenBuffer, 0, sizeof(screenBuffer));
-
-    drawSprites(&sys.mem.ROM[0x30ae], screenBuffer);
-
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
@@ -45,8 +38,21 @@ int display(System sys)
         exit(1);
     }
 
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_RenderSetLogicalSize(renderer, 160, 144);
+}
+
+int display(System sys)
+{
+
+    uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H];
+    memset(screenBuffer, 0, sizeof(screenBuffer));
+
+    drawSprites(&sys.mem.ROM[0x30ae], screenBuffer);
+
+    
+
+
     SDL_SetRenderDrawColor(renderer, COLOR3, 255);
 
     int running = 1;
@@ -64,12 +70,6 @@ int display(System sys)
         SDL_RenderClear(renderer);
         drawScreen(screenBuffer, renderer);
         SDL_RenderPresent(renderer);
-        // for (int i = 0; i < SCREENBUF_W; i++)
-        // {
-        // for (int j = 0; j < SCREENBUF_H; j++)
-        // {
-        // screenBuffer[i][j] = CIRCULAR_SHIFT_LEFT(screenBuffer[i][j], 1, 8);
-        // }}
 
 
         SDL_Delay(16);
@@ -80,6 +80,8 @@ int display(System sys)
     SDL_Quit();
 }
 
+
+// copy sprite data from 1d array to 2d screenbuffer array for testing
 void drawSprites(uint8_t tileData[0xfff], uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H])
 {
     int sX = 0;
