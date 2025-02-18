@@ -14,7 +14,7 @@
 
 System sys;
 
-int loadrom(char* path, Mem* memory)
+int loadrom(char* path)
 {
     int romPtr = open(path, 0);
     if (romPtr < 1)
@@ -22,7 +22,7 @@ int loadrom(char* path, Mem* memory)
         puts("ERROR: ROM path invalid! Does it exist?\n");
         return 1;
     }
-    int romSize = read(romPtr, memory->memory, 32767);
+    int romSize = read(romPtr, sys.mem.memory, 32767);
     if (romSize < 1)
     {
         puts("ERROR: ROM Read Failed!\n");
@@ -35,7 +35,7 @@ int loadrom(char* path, Mem* memory)
 
 
 
-void loadBootRom(Mem* memory)
+void loadBootRom()
 {
     FILE* bootRom = fopen("roms/DMG_ROM.bin", "rb");
     if (bootRom == NULL)
@@ -43,26 +43,25 @@ void loadBootRom(Mem* memory)
         puts("ERROR: BOOT ROM not found!\n");
         exit(1);
     }
-    memcpy(memory->BOOT_ROM, memory->memory, 256);
-    fread(memory->memory, 256, 1, bootRom);
+    memcpy(sys.mem.BOOT_ROM, sys.mem.memory, 256);
+    fread(sys.mem.memory, 256, 1, bootRom);
     fclose(bootRom);
 }
 
-void initMem(Mem* memory)
+void initMem()
 {
-    memory->memory = (uint8_t*)malloc(65536 * sizeof(uint8_t));
-    memory->BOOT_ROM = (uint8_t*)malloc(256 * sizeof(uint8_t));
-    if (memory->memory == NULL || memory->BOOT_ROM == NULL)
+    sys.mem.memory = (uint8_t*)malloc(65536 * sizeof(uint8_t));
+    sys.mem.BOOT_ROM = (uint8_t*)malloc(256 * sizeof(uint8_t));
+    if (sys.mem.memory == NULL || sys.mem.BOOT_ROM == NULL)
     {
         puts("ERROR: Memory allocation failed!\n");
         exit(1);
     }
 
 
-    memory->ROM = memory->memory;
-    memory->Title = (char*) &memory->ROM[0x134];
-
-    sys.regs.LCDC = (union lcdc *)&(memory->memory[0xFF40]);
+    sys.mem.ROM = sys.mem.memory;
+    sys.mem.Title = (char*) &(sys.mem.ROM[0x134]);
+    sys.regs.LCDC = (union lcdc *)&(sys.mem.ROM[0xFF40]);
 }
 
 
@@ -77,13 +76,13 @@ int main(int argc, char** argv)
 
     
 
-    initMem(&sys.mem);
+    initMem();
 
     uint8_t* ordered[] = {&sys.regs.B, &sys.regs.C, &sys.regs.D, &sys.regs.E, &sys.regs.H, &sys.regs.L, NULL, &sys.regs.A};
     sys.regs.ordered = ordered;
 
 
-    if (loadrom(argv[1], &sys.mem) != 0)
+    if (loadrom(argv[1]) != 0)
     {
         return 1;
     };
@@ -105,7 +104,7 @@ int main(int argc, char** argv)
 
     puts("Executing boot sequence");
 
-    display(sys);
+    display();
 
     sys.regs.PC = sys.mem.memory;
     sys.regs.SP = &sys.mem.memory[0xFEFE];

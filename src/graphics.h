@@ -24,7 +24,7 @@ SDL_Event event;
 
 uint8_t backgroundTileMap[32][32];
 
-int display(System sys);
+int display();
 void drawSprites(uint8_t tileData[0xfff], uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H]);
 
 struct tile {

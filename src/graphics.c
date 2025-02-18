@@ -29,7 +29,7 @@ void init_graphics()
     SDL_RenderSetLogicalSize(renderer, 160, 144);
 }
 
-int display(System sys)
+int display()
 {
 
     uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H];
