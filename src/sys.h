@@ -1,7 +1,25 @@
 #ifndef SYS_H
 #define SYS_H
 
+
 #include <stdint.h>
+
+union lcdc
+{
+    struct 
+    {
+        uint8_t BackgroundWindowDisplay: 1;
+        uint8_t SpriteDisplay: 1;
+        uint8_t SpriteSize: 1; // 0: short, 1: tall
+        uint8_t BackgroundTileMapSelect: 1;
+        uint8_t BackgroundWindowTileData: 1;
+        uint8_t WindowDisplay: 1;
+        uint8_t WindowTileMapSelect: 1;
+        uint8_t LcdControl: 1;
+    };
+    uint8_t LCDC;
+};
+
 typedef struct registers
 {
     union
@@ -68,7 +86,7 @@ typedef struct registers
     uint8_t* TAC; // Timer Control
     uint8_t* IF; // Interrupt Flag
 
-    uint8_t* LCDC; // LCD Control
+    union lcdc* LCDC; // LCD Control
     uint8_t* SCY; // Scroll Y
     uint8_t* SCX; // Scroll X
     uint8_t* LY;

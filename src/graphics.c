@@ -20,6 +20,12 @@ void init_graphics()
     }
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    if (renderer == NULL)
+    {
+        printf("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+        exit(1);
+    }
+
     SDL_RenderSetLogicalSize(renderer, 160, 144);
 }
 
@@ -29,7 +35,7 @@ int display(System sys)
     uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H];
     memset(screenBuffer, 0, sizeof(screenBuffer));
 
-    drawSprites(&sys.mem.ROM[0x30ae], screenBuffer);
+    drawSprites(&sys.mem.memory[0x30ae], screenBuffer);
 
     
 
@@ -59,6 +65,7 @@ int display(System sys)
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    return 0;
 }
 
 

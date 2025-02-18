@@ -14,9 +14,6 @@
 
 System sys;
 
-void executeOperation();
-void executePrefixOperation();
-
 int loadrom(char* path, Mem* memory)
 {
     int romPtr = open(path, 0);
@@ -64,6 +61,8 @@ void initMem(Mem* memory)
 
     memory->ROM = memory->memory;
     memory->Title = (char*) &memory->ROM[0x134];
+
+    sys.regs.LCDC = (union lcdc *)&(memory->memory[0xFF40]);
 }
 
 
