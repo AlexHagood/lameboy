@@ -73,9 +73,9 @@ void draw_bg()
     {
         printf("Initializing background tile data");
         init_background(tileMapTable0, &sys.mem.memory[0x9800]);
-        init_background(tileMapTable0, &sys.mem.memory[0x9C00]);
-        tileDataTable0 = &sys.mem.memory[0x8800];
-        tileDataTable1 = &sys.mem.memory[0x8000];
+        init_background(tileMapTable1, &sys.mem.memory[0x9C00]);
+        tileDataTable0 = (__uint128_t*)&sys.mem.memory[0x8800];
+        tileDataTable1 = (__uint128_t*)&sys.mem.memory[0x8000];
     }
 
     uint8_t** tileMapTable;
@@ -97,8 +97,8 @@ void draw_bg()
     {
         for (int yi = 0; yi < 144; yi++)
         {
-            uint8_t x = xi + sys.regs.SCX;
-            uint8_t y = yi + sys.regs.SCY;
+            uint8_t x = xi + *sys.regs.SCX;
+            uint8_t y = yi + *sys.regs.SCY;
 
             __uint128_t sprite = backgroundSprites[x / 32][y / 32 ];
             uint8_t pixel = (x % 8) + ((y % 8) * 8);
@@ -109,30 +109,14 @@ void draw_bg()
     }
 }
 
-typedef struct sprite {
-    uint8_t x;
-    uint8_t y;
-    union{
-        uint8_t pattern;
-        struct {
-            uint8_t ignored: 1;
-            uint8_t patternBig: 7;
-        };
-    };
-    struct 
-    {
-        uint8_t ignored2: 4;
-        uint8_t pallete: 1;
-        uint8_t xflip: 1;
-        uint8_t yflip: 1;
-        uint8_t priority: 1;
-    };
-    
-} Sprite;
 
 void draw_sprites()
 {
-    static Sprite* oam = &(sys.mem.memory[0xFE00]);
+    static Sprite* oam = NULL;
+    if (oam == NULL)
+    {
+        oam = (Sprite*)&sys.mem.memory[0xFE00];
+    };
     
     if (sys.regs.LCDC->SpriteSize)
     {
@@ -161,92 +145,29 @@ void draw_sprites()
 
 }
 
-void init_background(uint8_t*** tileMapTable, uint8_t* tileMapAddress)
+void init_background(uint8_t** tileMapTable, uint8_t* tileMapAddress)
 {
     for (int i = 0; i < 32; i++)
     {
-        *tileMapTable[i] = tileMapAddress[i*32];
+        tileMapTable[i] = &tileMapAddress[i*32];
     };
     return;
 }
 
 int display()
 {
-
-    uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H];
-    memset(screenBuffer, 0, sizeof(screenBuffer));
-
-    drawSprites(&sys.mem.memory[0x30ae], screenBuffer);
-
-    
-
-
-    SDL_SetRenderDrawColor(renderer, COLOR3, 255);
-
-    int running = 1;
-    while (running)
+    while (SDL_PollEvent(&event))
     {
-
-        while (SDL_PollEvent(&event))
+        if (event.type == SDL_QUIT)
         {
-            if (event.type == SDL_QUIT)
-            {
-                running = 0;
-            }
+            SDL_DestroyRenderer(renderer);
+            SDL_DestroyWindow(window);
+            SDL_Quit();
+            exit(0);
         }
-
-        SDL_RenderClear(renderer);
-        drawScreen(screenBuffer, renderer);
-        SDL_RenderPresent(renderer);
-
-
-        SDL_Delay(16);
     }
 
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
     return 0;
 }
 
 
-// copy sprite data from 1d array to 2d screenbuffer array for testing
-void drawSprites(uint8_t tileData[0xfff], uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H])
-{
-    int sX = 0;
-    int sY = 0;
-    for (int tile = 0; tile < 256; tile++)
-    {
-        uint8_t* sprite = &tileData[tile * 16];
-        for (int y = 0; y < 8; y++)
-        {
-            screenBuffer[sX][sY + y] = sprite[y*2];
-            screenBuffer[sX + 1][sY + y] = sprite[y*2 + 1];
-
-        }
-        sX += 2;
-        if (sX % SCREENBUF_W == 0)
-        {
-            sX = 0;
-            sY += 8;
-        }
-    }
-
-}
-
-void drawScreen(uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H], SDL_Renderer *renderer)
-{
-    for (int x = 0; x < 20; x++)
-    {
-        for (int y = 0; y < SCREENBUF_H; y++)
-        {
-            for (int k = 0; k < 8; k++)
-            {
-
-
-
-
-            }
-        }
-    }
-}

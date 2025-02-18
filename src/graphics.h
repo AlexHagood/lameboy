@@ -25,9 +25,34 @@ SDL_Event event;
 
 int display();
 void drawSprites(uint8_t tileData[0xfff], uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H]);
-
+void set_tile_color(__uint128_t tile, uint8_t pixelNumber);
+void init_graphics();
+void draw_bg();
+void draw_sprites();
+void init_background(uint8_t** tileMapTable, uint8_t* tileMapAddress);
 struct tile {
     uint16_t line[8];
 };
+
+typedef struct sprite {
+    uint8_t x;
+    uint8_t y;
+    union{
+        uint8_t pattern;
+        struct {
+            uint8_t ignored: 1;
+            uint8_t patternBig: 7;
+        };
+    };
+    struct 
+    {
+        uint8_t ignored2: 4;
+        uint8_t pallete: 1;
+        uint8_t xflip: 1;
+        uint8_t yflip: 1;
+        uint8_t priority: 1;
+    };
+    
+} Sprite;
 
 
