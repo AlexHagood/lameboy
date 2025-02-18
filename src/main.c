@@ -5,7 +5,12 @@
 #include <string.h>
 #include <fcntl.h>
 #include "sys.h"
-#include "graphics.h"
+
+
+#include "graphics.c"
+#include "opcodes.c"
+#include "operations.c"
+
 
 System sys;
 
