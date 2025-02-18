@@ -2,6 +2,8 @@
 #include "sys.h"
 #include "graphics.h"
 
+System sys;
+
 void drawScreen(uint8_t screenBuffer[SCREENBUF_W][SCREENBUF_H], SDL_Renderer *renderer);
 
 void init_graphics()
@@ -27,6 +29,33 @@ void init_graphics()
     }
 
     SDL_RenderSetLogicalSize(renderer, 160, 144);
+}
+
+void set_tile_color(__uint128_t tile, uint8_t pixelNumber)
+{
+    uint16_t spriteRow = ((uint16_t*)&tile)[pixelNumber / 8];
+    uint8_t spriteCol = pixelNumber % 8;
+
+    int pallete_lo = (spriteRow & (0x8000 >> spriteCol)) != 0;
+    int pallete_hi = (spriteRow & (0x80 >> spriteCol)) != 0;
+    int color = (pallete_hi << 1) | pallete_lo;
+    
+    switch (color)
+    {
+    case 0:
+        SDL_SetRenderDrawColor(renderer, COLOR0, 255);
+        break;
+    case 1:
+        SDL_SetRenderDrawColor(renderer, COLOR1, 255);
+        break;
+    case 2:
+        SDL_SetRenderDrawColor(renderer, COLOR2, 255);
+        break;
+    case 3:
+        SDL_SetRenderDrawColor(renderer, COLOR3, 255);
+        break;
+    }
+
 }
 
 void draw_bg()
@@ -74,33 +103,63 @@ void draw_bg()
             __uint128_t sprite = backgroundSprites[x / 32][y / 32 ];
             uint8_t pixel = (x % 8) + ((y % 8) * 8);
 
-            uint16_t spriteRow = ((uint16_t*)&sprite)[y % 8];
-            uint8_t spriteCol = x % 8;
-
-            int pallete_lo = (spriteRow & (0x8000 >> spriteCol)) != 0;
-            int pallete_hi = (spriteRow & (0x80 >> spriteCol)) != 0;
-            int color = (pallete_hi << 1) | pallete_lo;
-            
-            switch (color)
-            {
-            case 0:
-                SDL_SetRenderDrawColor(renderer, COLOR0, 255);
-                break;
-            case 1:
-                SDL_SetRenderDrawColor(renderer, COLOR1, 255);
-                break;
-            case 2:
-                SDL_SetRenderDrawColor(renderer, COLOR2, 255);
-                break;
-            case 3:
-                SDL_SetRenderDrawColor(renderer, COLOR3, 255);
-                break;
-            }
+            set_tile_color(sprite, pixel);
             SDL_RenderDrawPoint(renderer, x, y);
         }
     }
 }
 
+typedef struct sprite {
+    uint8_t x;
+    uint8_t y;
+    union{
+        uint8_t pattern;
+        struct {
+            uint8_t ignored: 1;
+            uint8_t patternBig: 7;
+        };
+    };
+    struct 
+    {
+        uint8_t ignored2: 4;
+        uint8_t pallete: 1;
+        uint8_t xflip: 1;
+        uint8_t yflip: 1;
+        uint8_t priority: 1;
+    };
+    
+} Sprite;
+
+void draw_sprites()
+{
+    static Sprite* oam = &(sys.mem.memory[0xFE00]);
+    
+    if (sys.regs.LCDC->SpriteSize)
+    {
+        printf("Big sprites not implemented");
+        exit(1);
+    }
+    
+    for (int s = 0; s < 40; s++)
+    {
+        int spriteX = oam[s].x - 8;
+        int spriteY = oam[s].y - 16;
+
+        __uint128_t tile = sys.mem.memory[0x8000] + oam[s].pattern;
+
+        for (int x = 0; x < 8; x++)
+        {
+            for (int y = 0; y < 8; y++)
+            {
+                set_tile_color(tile, y*8+x);
+                SDL_RenderDrawPoint(renderer, spriteX, spriteY);
+            }
+        }
+
+    }
+
+
+}
 
 void init_background(uint8_t*** tileMapTable, uint8_t* tileMapAddress)
 {
