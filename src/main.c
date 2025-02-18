@@ -7,12 +7,13 @@
 #include "sys.h"
 
 
+System sys;
+
 #include "graphics.c"
 #include "opcodes.c"
 #include "operations.c"
 
 
-System sys;
 
 int loadrom(char* path)
 {
@@ -77,6 +78,7 @@ int main(int argc, char** argv)
     
 
     initMem();
+    init_graphics();
 
     uint8_t* ordered[] = {&sys.regs.B, &sys.regs.C, &sys.regs.D, &sys.regs.E, &sys.regs.H, &sys.regs.L, NULL, &sys.regs.A};
     sys.regs.ordered = ordered;

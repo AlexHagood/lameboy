@@ -12,7 +12,7 @@ union lcdc
         uint8_t SpriteDisplay: 1;
         uint8_t SpriteSize: 1; // 0: short, 1: tall
         uint8_t BackgroundTileMapSelect: 1;
-        uint8_t BackgroundWindowTileData: 1;
+        uint8_t TileDataSelect: 1;
         uint8_t WindowDisplay: 1;
         uint8_t WindowTileMapSelect: 1;
         uint8_t LcdControl: 1;
